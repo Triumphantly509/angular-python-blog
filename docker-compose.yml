@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: bloguser
+      POSTGRES_PASSWORD: blogpassword
+      POSTGRES_DB: blogdb
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  backend:
+    build: ./blog_project_python
+    restart: always
+    env_file:
+      - ./blog_project_python/.env
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./blog_project_python:/app
+
+  frontend:
+    build: ./blog_project
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "4200:80" # host 4200 → nginx 80
+    volumes:
+      - ./blog_project:/app
+
+volumes:
+  db_data:
